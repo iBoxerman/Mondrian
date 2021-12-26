@@ -7,18 +7,14 @@ class Partition(object):
         self.data = data
         self.finished_qis = {}
         self.resrections = {}
-        for qi in get_qis()["names"]:
+        qis = list(data.columns)
+        qis.remove('income')
+        for qi in qis:
             self.finished_qis[qi] = False
             self.resrections[qi] = {}
             self.resrections[qi]["high"] = np.max(data[qi])
             self.resrections[qi]["low"] = np.min(data[qi])
 
-    # def add_record(self, record, dim):
-    #     self.member.append(record)
-
-    # def add_multiple_record(self, records, dim):
-    #     for record in records:
-    #         self.add_record(record, dim)
 
     def __len__(self):
         return len(self.data)

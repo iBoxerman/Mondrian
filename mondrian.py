@@ -8,26 +8,33 @@ results = []
 qis_info = {}
 
 
-def run(arg_k=10, qis=None, path=None, rows=None):
+def run(selected_k, selected_qis=None, n_rows=None, relative_path=None):
+    print(f'starting mondrian...')
     global k
     global qis_info
-    if arg_k:
-        k = arg_k
-    output_path = './mondrian_results.csv'
-    if path:
-        path = path + './resources/adult.data'
-        output_path = '.' + output_path
-    data, qis = init(path=path, rows=rows, qis=qis)
+    k = selected_k
+
+    results_folder_path = './resources'
+    output_filename = 'mondrian_results.csv'
+    raw_data_filename = './resources/adult.data'
+    selected_data_filename = 'mondrian_input.csv'
+    if relative_path:
+        results_folder_path = relative_path + results_folder_path
+    data, selected_qis = get_data(selected_qis=selected_qis, n_rows=n_rows, relative_path=relative_path,
+                                  output_path=results_folder_path, raw_data_filename=raw_data_filename,
+                                  selected_data_filename=selected_data_filename)
     qis_info = get_qis()
     whole = Partition(data)
     start_time = time.time()
     run_partition(whole)
-    print(f'time: {time.time()-start_time}')
+    time_duration = time.time() - start_time
     global results
     output = data.copy().astype(str)
     for partition in results:
         reconstruct_result(partition, output)
-    output.to_csv(output_path, sep=',', header=False, index=False)
+    output.to_csv(results_folder_path + '/' + output_filename, sep=',', header=False, index=False)
+    print(f'finished in {time_duration} s')
+    return results_folder_path + '/', output_filename, selected_data_filename, time_duration
 
 
 def reconstruct_result(partition, output, delimiter='~'):
@@ -56,13 +63,6 @@ def reconstruct_result(partition, output, delimiter='~'):
     for index, record in partition.data.iterrows():
         for qi in row:
             output.at[index, qi] = row[qi]
-
-
-def init(arg_k=10, qis=None, path=None, rows=None):
-    global k
-    k = arg_k
-    data, qis = get_data(path=path, mod_qis=qis, rows=rows)
-    return data, qis
 
 
 def run_partition(partition):
@@ -148,4 +148,4 @@ def find_mid(partition, qi):
 
 
 if __name__ == '__main__':
-    run()
+    run(10, n_rows=100)
