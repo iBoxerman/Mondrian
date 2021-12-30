@@ -1,8 +1,8 @@
-from utils.data import attributes, default_attributes
+from utils.data import attributes, default_attributes, str_attributes
 from mondrian import run
 from tkinter import *
 from tkinter import ttk
-from ttkthemes import themed_style
+import ttkthemes as theme
 import pandas as pd
 
 attributes_with_income = attributes.copy()
@@ -15,31 +15,26 @@ def attributes_without_income():
 
 
 root = Tk()
-root.title("Mondrian")
-root.geometry('700x500')
+root.title("Mondrian - Itai & Igal")
+root.attributes("-fullscreen", True)
 
-button_height = 3
-button_width = 4
-button_border = 4
-
-scale_width = 250
 pad_x = 20
-pad_y = 20
-# title_font = ("Times", 18)
-title_font = None
-button_font = None
+pad_y = 5
+font = ("Thaoma", 20)
 
+style = theme.ThemedStyle(root)
+style.theme_use('equilux')
+# style.theme_use('alt')
 
-style = ttk.Style()
+style.configure('TLabel', font=font)
+style.configure('exit.TButton', background='red', foreground='white', width=4, borderwidth=0, font=font)
+style.configure('run.TButton', background='green', foreground='white', width=4, borderwidth=0, font=font)
+style.map('exit.TButton', background=[('active', 'red')])
+style.map('run.TButton', background=[('active', 'green')])
+style.configure('Treeview.Heading', font=font)
+style.configure('Treeview', font=font)
 
-style.theme_use('alt')
-
-
-style.configure('exit.TButton', background='red', foreground='white', width=4, borderwidth=0)
-style.configure('run.TButton', background='green', foreground='white', width=4, borderwidth=0)
-style.map('exit.TButton', background=[('active','red')])
-style.map('run.TButton', background=[('active','green')])
-
+style.map('Treeview', background=[('selected', '#d69806'), ('disabled', '#2e2e2e')], foreground=[('selected', 'black')])
 
 config_model = ttk.Frame(root)
 results_frame = ttk.Frame(root)
@@ -51,57 +46,53 @@ def main_window(init=False):
 
     k_frame = ttk.Frame(scales_frame)
     k_label = ttk.Label(k_frame, text="Choose K")
-    k = ttk.LabeledScale(k_frame, from_=1, to=20)
-    # k.set(10)
-    k_label.pack(side=TOP)
+    k = ttk.LabeledScale(k_frame, from_=0, to=20)
+    k.value = 10
+    k_label.pack(side=TOP,expand=YES)
     k.pack(side=BOTTOM, fill=X, expand=YES)
 
     n_frame = ttk.Frame(scales_frame)
-    n_label = ttk.Label(n_frame, text="Choose Number of Records", font=title_font)
+    n_label = ttk.Label(n_frame, text="Choose Number of Records")
     n = ttk.LabeledScale(n_frame, from_=1, to=32561)
-    # n.set(32561)
-    n_label.pack(side=TOP)
+    n.value = 32561//2
+    n_label.pack(side=TOP,expand=YES)
     n.pack(side=BOTTOM, fill=X, expand=YES)
 
     k_frame.pack(padx=pad_x, side=LEFT, anchor=W, fill=X, expand=YES)
     n_frame.pack(padx=pad_x, side=RIGHT, anchor=E, fill=X, expand=YES)
 
     list_frame = ttk.Frame(config_model)
-    list_label = ttk.Label(list_frame, text="choose attributes:", font="bold 12")
-    listbox = Listbox(list_frame, selectmode="multiple")
-
-    list_label.pack(side=TOP)
-    listbox.pack(padx=pad_x, pady=pad_y, fill=X, expand=YES)
-
+    listbox = ttk.Treeview(list_frame, selectmode='extended', show="headings", columns=("name", "type"))
+    listbox.column("# 1", anchor=CENTER)
+    listbox.heading("# 1", text="Attribute")
+    listbox.column("# 2", anchor=CENTER)
+    listbox.heading("# 2", text="Type")
     for i, attribute in enumerate(attributes_without_income()):
-        listbox.insert(END, attribute.replace('_', ' '))
-        listbox.itemconfig(i)
+        listbox.insert('', index=i, iid=i,
+                       values=(attribute, "integer" if attribute in str_attributes else "string"),
+                       tags=('entry'))
         if attribute in default_attributes:
-            listbox.select_set(i)
-            print(attribute)
+            listbox.selection_toggle(i)
+    listbox.tag_configure('entry', font=font)
+    listbox.pack(padx=pad_x, fill=BOTH, expand=YES)
 
     def action():
         qis = []
-        chosen_qis = listbox.curselection()
+        chosen_qis = listbox.selection()
         for i in chosen_qis:
-            op = listbox.get(i)
-            qis.append(op.replace(' ', '_'))
+            op = listbox.item(i)
+            qis.append(op["values"][0])
 
-        results_path, results_filename, input_data_filename, time_duration = run(k.get(), qis,
-                                                                                 n_rows=n.get())
+        results_path, results_filename, input_data_filename, time_duration = run(k.value, qis,
+                                                                                 n_rows=n.value)
         results(results_path, results_filename, input_data_filename, qis, time_duration)
         switch_to_results()
 
-    buttons_frame = ttk.Frame(config_model)
-    exit_button = ttk.Button(buttons_frame, text="Exit", command=root.quit, style="exit.TButton")
-    run_button = ttk.Button(buttons_frame, text="Run", command=action, style="run.TButton")
-
-    exit_button.pack(padx=pad_x, pady=pad_y, side=LEFT, fill=X, expand=YES)
-    run_button.pack(padx=pad_x, pady=pad_y, side=RIGHT, fill=X, expand=YES)
+    buttons_frame = create_buttons_frame(config_model, "Run", action)
 
     scales_frame.pack(side=TOP, fill=X, expand=YES)
-    list_frame.pack(fill=X, expand=TRUE)
-    buttons_frame.pack(side=BOTTOM, anchor=S, fill=X, expand=YES)
+    list_frame.pack(fill=BOTH, expand=YES)
+    buttons_frame.pack(side=BOTTOM, fill=X, expand=YES)
 
     if init:
         mainloop()
@@ -109,58 +100,78 @@ def main_window(init=False):
 
 def switch_to_results():
     global config_model
-    config_model.pack_forget()
-    results_frame.pack(fill=BOTH, expand=TRUE)
+    clear_frame(config_model)
+    results_frame.pack(fill=BOTH, expand=YES)
 
 
 def switch_to_main():
     global results_frame
-    results_frame.pack_forget()
-    config_model.pack(fill=BOTH, expand=TRUE)
+    clear_frame(results_frame)
+    config_model.pack(fill=BOTH, expand=YES)
 
 
 def results(results_path, results_filename, input_data_filename, qis, time_duration):
-    input_tree = ttk.Treeview(results_frame)
-    results_tree = ttk.Treeview(results_frame)
+    text_frame = ttk.Frame(results_frame)
+    for sen in [f'Results description\n',
+                f'Information Loss: \n',
+                f'Running time: {time_duration:.3f} seconds']:
+        ttk.Label(text_frame,text=sen).pack(anchor=CENTER, expand=YES)
 
+
+    tables_frame = ttk.Frame(results_frame)
+    input_frame = ttk.Frame(tables_frame)
+    input_label = ttk.Label(input_frame, text="input data")
     input_df = pd.read_csv(results_path + input_data_filename)
-    results_df = pd.read_csv(results_path + results_filename)
+    input_tree = build_tree(input_frame, input_df, qis)
+    input_label.pack(side=TOP,expand=YES)
+    input_tree.pack(padx=pad_x, side=BOTTOM,fill=BOTH, expand=YES)
 
-    clear_tree(input_tree)
-    clear_tree(results_tree)
-    r = 0
+    output_frame = ttk.Frame(tables_frame)
+    output_label = ttk.Label(output_frame, text="output data")
+    output_df = pd.read_csv(results_path + results_filename)
+    output_tree = build_tree(output_frame, output_df, qis)
+    output_label.pack(side=TOP,expand=YES)
+    output_tree.pack(padx=pad_x, side=BOTTOM,fill=BOTH, expand=YES)
 
-    Label(results_frame, text="input data").pack()
-    r += 2
-    build_tree(input_tree, input_df, qis)
-    r += 4
-    Label(results_frame, text="output data").pack()
-    r += 2
-    build_tree(results_tree, results_df, qis)
-    r += 2
+    input_frame.pack(side=TOP, fill=BOTH, expand=YES)
+    output_frame.pack(side=BOTTOM, fill=BOTH, expand=YES)
 
-    exit_button = create_button(parent=results_frame, text="Exit", cmd=root.quit, bg='red')
-    exit_button.pack()
+    buttons_frame = create_buttons_frame(results_frame, "Back to configuration", main_window)
 
-    Button(results_frame, text="Run Again", command=main_window, width=button_width, height=button_height,
-           highlightbackground='green',
-           fg='white')
+    text_frame.pack(side=TOP,fill=X, expand=YES)
+    tables_frame.pack(fill=BOTH, expand=YES)
+    buttons_frame.pack(side=BOTTOM, fill=X, expand=YES)
 
 
-def build_tree(tree, df, qis):
-    tree["column"] = qis
-    tree["show"] = "headings"
-    for col in tree["column"]:
-        tree.heading(col, text=col)
+def build_tree(frame, df, qis):
+    table_cols = ['index'] + qis
+    tree = ttk.Treeview(frame, selectmode='extended', show="headings", columns=table_cols)
+    clear_tree(tree)
+    for index, qi in enumerate(table_cols):
+        tree.column( "# " + str(index), anchor=CENTER, stretch=YES)
+        tree.heading(index, text=qi)
     df_rows = df.to_numpy().tolist()
-    for row in df_rows:
-        tree.insert("", "end", values=row)
-    tree.pack()
+    for index, row in enumerate(df_rows):
+        tree.insert("", END, values=(index, *row))
+    return tree
 
 
 def clear_tree(my_tree):
     my_tree.delete(*my_tree.get_children())
 
+
+def clear_frame(frame):
+    for widget in frame.winfo_children():
+        widget.destroy()
+    frame.pack_forget()
+
+def create_buttons_frame(frame, run_text, run_cmd):
+    buttons_frame = ttk.Frame(frame)
+    exit_button = ttk.Button(buttons_frame, text="Exit", command=root.quit, style="exit.TButton")
+    run_button = ttk.Button(buttons_frame, text=run_text, command=run_cmd, style="run.TButton")
+    exit_button.pack(padx=pad_x, pady=pad_y, side=LEFT, fill=X, expand=YES)
+    run_button.pack(padx=pad_x, pady=pad_y, side=RIGHT, fill=X, expand=YES)
+    return  buttons_frame
 
 if __name__ == '__main__':
     main_window(init=True)
