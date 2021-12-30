@@ -2,13 +2,16 @@ import numpy as np
 import time
 from utils.data import get_data, get_qis
 from partition import Partition
+import cProfile
+import pstats
 
 k = 10
 results = []
 qis_info = {}
 
 
-def run(selected_k, selected_qis=None, n_rows=None, relative_path=None):
+def run(selected_k=10, selected_qis=None, n_rows=None):
+    print(selected_qis)
     print(f'starting mondrian...')
     global k
     global qis_info
@@ -18,9 +21,7 @@ def run(selected_k, selected_qis=None, n_rows=None, relative_path=None):
     output_filename = 'mondrian_results.csv'
     raw_data_filename = './resources/adult.data'
     selected_data_filename = 'mondrian_input.csv'
-    if relative_path:
-        results_folder_path = relative_path + results_folder_path
-    data, selected_qis = get_data(selected_qis=selected_qis, n_rows=n_rows, relative_path=relative_path,
+    data, selected_qis = get_data(selected_qis=selected_qis, n_rows=n_rows,
                                   output_path=results_folder_path, raw_data_filename=raw_data_filename,
                                   selected_data_filename=selected_data_filename)
     qis_info = get_qis()
@@ -29,7 +30,7 @@ def run(selected_k, selected_qis=None, n_rows=None, relative_path=None):
     run_partition(whole)
     time_duration = time.time() - start_time
     global results
-    output = data.copy().astype(str)
+    output = data.astype(str)
     for partition in results:
         reconstruct_result(partition, output)
     output.to_csv(results_folder_path + '/' + output_filename, sep=',', header=False, index=False)
@@ -41,8 +42,8 @@ def reconstruct_result(partition, output, delimiter='~'):
     global qis_info
     row = {}
     for qi in qis_info["names"]:
-        low = partition.resrections[qi]["low"]
-        high = partition.resrections[qi]["high"]
+        low = partition.restrictions[qi][0]
+        high = partition.restrictions[qi][1]
         dt = 'U50'
         keys = np.fromiter(qis_info["str_qis"][qi].keys(), dtype=dt)
         vals = np.fromiter(qis_info["str_qis"][qi].values(), dtype=int)
@@ -108,11 +109,10 @@ def choose_dim(partition):
 
 
 def calc_norm(partition, qi):
-    keys = partition.data[qi].unique()
-    all_keys = list(qis_info["str_qis"][qi].values())
-    diff = lambda arr: float(np.max(arr)) - float(np.min(arr))
-    width = diff(keys)
-    all_width = diff(all_keys)
+    max = qis_info["max_min"][qi]["max"]
+    min = qis_info["max_min"][qi]["min"]
+    width = partition.restrictions[qi][1] - partition.restrictions[qi][0]
+    all_width = max - min
     if width == all_width:
         return 1
     return width * 1.0 / all_width
@@ -120,18 +120,29 @@ def calc_norm(partition, qi):
 
 def frequency_set(partition, qi):
     freq_set = {}
+    sum = 0
+    # for idx , value_at in partition.data.iterrows():
+    #     try:
+    #         value_at=value_at[1]
+    #         freq_set[value_at] += 1
+    #         sum += freq_set[value_at]
+    #     except KeyError:
+    #         freq_set[value_at] = 1
+    #         sum += freq_set[value_at]
+    # return freq_set, sum
+
     for k, v in partition.data[qi].value_counts().iteritems():
         freq_set[k] = v
-    return freq_set
+        sum += v
+    return freq_set, sum
 
 
 def find_mid(partition, qi):
     global k
-    freq_set = frequency_set(partition, qi)
+    freq_set, total = frequency_set(partition, qi)
     split = ''
     next = ''
     values = sorted(freq_set.keys())
-    total = sum(freq_set.values())
     middle = total // 2
     if middle < k or len(values) <= 1:
         return '', ''
@@ -148,4 +159,10 @@ def find_mid(partition, qi):
 
 
 if __name__ == '__main__':
-    run(10, n_rows=100)
+    cProfile.run('run(10, n_rows=None)', './profile_results')
+
+    file = open('formatted_profile.txt', 'w')
+    profile = pstats.Stats('./profile_results', stream=file)
+    profile.sort_stats('cumulative')  # Sorts the result according to the supplied criteria
+    profile.print_stats(15)  # Prints the first 15 lines of the sorted report
+    file.close()

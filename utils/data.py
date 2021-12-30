@@ -27,21 +27,20 @@ def set_dict(data, qis):
                 "names": qis,
                 "n_unique": [data[qi].nunique() - 1 for qi in qis],
                 "values_per_qi": {},
-                "str_qis": {}}
+                "str_qis": {},
+                "max_min":{}}
     for qi in qis:
         qis_info["values_per_qi"][qi] = {}
         for k, v in data[qi].value_counts().iteritems():
             qis_info["values_per_qi"][qi][k] = v
 
 
-def get_data(selected_qis=None, n_rows=None, relative_path=None, output_path=None,
+def get_data(selected_qis=None, n_rows=None, output_path=None,
              raw_data_filename='./resources/adult.data', selected_data_filename='mondrian_input.csv'):
     global qis
     if selected_qis:
         qis = selected_qis
 
-    if relative_path:
-        raw_data_filename = relative_path + raw_data_filename
     if not output_path:
         output_path = '.'
     output_path = output_path + '/' + selected_data_filename
@@ -57,7 +56,7 @@ def get_data(selected_qis=None, n_rows=None, relative_path=None, output_path=Non
     qis.remove('income')
 
     data = filter_data(data)
-    data.copy().to_csv(output_path, sep=',', header=False, index=False)
+    data.to_csv(output_path, sep=',', header=False, index=False)
 
     set_dict(data, qis)
     data = convert_to_number(data)
@@ -66,10 +65,10 @@ def get_data(selected_qis=None, n_rows=None, relative_path=None, output_path=Non
 
 def convert_to_number(data):
     global qis_info
-    x = qis_info
     for qi in qis_info["names"]:
         column_options = data[qi].unique()
         qis_info["str_qis"][qi] = {}
+        qis_info["max_min"][qi] = {}
         for i, option in enumerate(column_options):
             if qi in str_attributes:
                 str_attributes[qi].append(option)
@@ -77,6 +76,10 @@ def convert_to_number(data):
                 qis_info["str_qis"][qi][option] = i
             else:
                 qis_info["str_qis"][qi][option] = option
+
+        vals_list = [*qis_info["str_qis"][qi].values()]
+        qis_info["max_min"][qi]["max"] = int(np.max(vals_list))
+        qis_info["max_min"][qi]["min"] = int(np.min(vals_list))
     return data
 
 
@@ -86,12 +89,3 @@ def filter_data(data):
         data = data.replace(f, np.nan)
     data = data.dropna()
     return data
-
-
-def reconstruct_attribute(df):
-    qis = df.columns
-    for qi in qis:
-        if qi not in str_attributes:
-            continue
-        for i, option in enumerate(str_attributes[qi]):
-            df[qi] = df[qi].replace(i, option)

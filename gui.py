@@ -1,10 +1,10 @@
 from utils.data import attributes, default_attributes
 from mondrian import run
 from tkinter import *
-from tkinter import ttk, filedialog
+from tkinter import ttk
 import pandas as pd
+import platform
 
-relative_path = '.'
 attributes_with_income = attributes.copy()
 
 
@@ -28,6 +28,7 @@ results_frame = Frame(root)
 
 def main_window(init=False):
     switch_to_main()
+
     dict = {}
     r = 0
     c = 0
@@ -63,10 +64,8 @@ def main_window(init=False):
         c += 1
 
     r += 2
-    Button(config_model, text="Exit", command=root.quit, width=b_width, height=b_height, highlightbackground='red',
-           fg='white').grid(row=r + 1,
-                            column=1,
-                            sticky=W)
+    exit_button = create_button(parent=config_model, text="Exit", cmd=root.quit, bg='red')
+    exit_button.grid(row=r + 1, column=1, sticky=W)
 
     def action():
         qis = []
@@ -75,12 +74,11 @@ def main_window(init=False):
             if b.get() == 1:
                 qis.append(attribute)
         results_path, results_filename, input_data_filename, time_duration = run(k.get(), qis,
-                                                                                 relative_path=relative_path,
                                                                                  n_rows=n.get())
         results(results_path, results_filename, input_data_filename, qis, time_duration)
         switch_to_results()
 
-    Button(config_model, text="Run", command=action, width=b_width, height=b_height, highlightbackground='green',
+    Button(config_model, text="Run", command=action, width=b_width, height=b_height, bg='green',
            fg='white').grid(row=r + 1, column=5, sticky=E)
 
     if init:
@@ -118,10 +116,10 @@ def results(results_path, results_filename, input_data_filename, qis, time_durat
     r += 2
     build_tree(results_tree, results_df, qis, r=r, c=0)
     r += 2
-    Button(results_frame, text="Exit", command=root.quit, width=b_width, height=b_height, highlightbackground='red',
-           fg='white').grid(row=r,
-                            column=0,
-                            sticky=W)
+
+    exit_button = create_button(parent=results_frame, text="Exit", cmd=root.quit, bg='red')
+    exit_button.grid(row=r+1, column=1, sticky=W)
+
     Button(results_frame, text="Run Again", command=main_window, width=b_width, height=b_height,
            highlightbackground='green',
            fg='white').grid(
@@ -141,6 +139,13 @@ def build_tree(tree, df, qis, r, c):
 
 def clear_tree(my_tree):
     my_tree.delete(*my_tree.get_children())
+
+
+def create_button(parent=root, text="", cmd=None, width=b_width, height=b_height, bg='green', fg='white'):
+    return Button(parent, text=text, command=cmd,
+                  width=width, height=height)
+                  # highlightbackground=bg, fg=fg, highlightthickness=0,
+                  # activebackground=bg, activeforeground=fg)
 
 
 if __name__ == '__main__':

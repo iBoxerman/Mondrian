@@ -1,20 +1,21 @@
 import numpy as np
-from utils.data import get_qis
 
 
 class Partition(object):
     def __init__(self, data):
         self.data = data
         self.finished_qis = {}
-        self.resrections = {}
-        qis = list(data.columns)
+        self.restrictions = {}
+        self.freq_set = {}
+
+        qis = data.columns.tolist()
         qis.remove('income')
+
         for qi in qis:
             self.finished_qis[qi] = False
-            self.resrections[qi] = {}
-            self.resrections[qi]["high"] = np.max(data[qi])
-            self.resrections[qi]["low"] = np.min(data[qi])
-
+            self.restrictions[qi] = []
+            self.restrictions[qi].append(np.min(data[qi]))
+            self.restrictions[qi].append(np.max(data[qi]))
 
     def __len__(self):
         return len(self.data)
