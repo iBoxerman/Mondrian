@@ -49,18 +49,20 @@ def get_data(selected_qis=None, n_rows=None, output_path=None,
     qis.append('income')
 
     data = pd.read_csv(raw_data_filename, names=attributes, sep=',', skipinitialspace=True)
-    if n_rows:
-        data = data.sample(n=n_rows)
 
     data = data[qis]
     qis.remove('income')
 
     data = filter_data(data)
+
+    if n_rows and n_rows<32560:
+        data = data.sample(n=n_rows)
+
     data.to_csv(output_path, sep=',', header=False, index=False)
 
     set_dict(data, qis)
     data = convert_to_number(data)
-    return data, qis[:-1]
+    return data, qis[:-1], len(data.index)
 
 
 def convert_to_number(data):

@@ -19,8 +19,11 @@ root.title("Mondrian - Itai & Igal")
 root.attributes("-fullscreen", True)
 
 pad_x = 20
-pad_y = 5
-font = ("Thaoma", 20)
+pad_y = 20
+font_family = "Thaoma"
+font = (font_family, 18)
+title_font = (font_family,  20,  "bold")
+
 
 style = theme.ThemedStyle(root)
 style.theme_use('equilux')
@@ -45,16 +48,17 @@ def main_window(init=False):
     scales_frame = ttk.Frame(config_model)
 
     k_frame = ttk.Frame(scales_frame)
-    k_label = ttk.Label(k_frame, text="Choose K")
+    k_label = ttk.Label(k_frame, text="Choose K", font=title_font)
     k = ttk.LabeledScale(k_frame, from_=0, to=20)
     k.value = 10
     k_label.pack(side=TOP,expand=YES)
     k.pack(side=BOTTOM, fill=X, expand=YES)
 
     n_frame = ttk.Frame(scales_frame)
-    n_label = ttk.Label(n_frame, text="Choose Number of Records")
+    n_label = ttk.Label(n_frame, text="Choose Number of Records", font=title_font)
     n = ttk.LabeledScale(n_frame, from_=1, to=32561)
-    n.value = 32561//2
+    # n.value = 32561//2
+    n.value = 200
     n_label.pack(side=TOP,expand=YES)
     n.pack(side=BOTTOM, fill=X, expand=YES)
 
@@ -83,9 +87,9 @@ def main_window(init=False):
             op = listbox.item(i)
             qis.append(op["values"][0])
 
-        results_path, results_filename, input_data_filename, time_duration = run(k.value, qis,
+        results_path, results_filename, input_data_filename, time_duration, ncp = run(k.value, qis,
                                                                                  n_rows=n.value)
-        results(results_path, results_filename, input_data_filename, qis, time_duration)
+        results(results_path, results_filename, input_data_filename, qis, time_duration,ncp)
         switch_to_results()
 
     buttons_frame = create_buttons_frame(config_model, "Run", action)
@@ -110,50 +114,59 @@ def switch_to_main():
     config_model.pack(fill=BOTH, expand=YES)
 
 
-def results(results_path, results_filename, input_data_filename, qis, time_duration):
+def results(results_path, results_filename, input_data_filename, qis, time_duration,ncp):
     text_frame = ttk.Frame(results_frame)
     for sen in [f'Results description\n',
-                f'Information Loss: \n',
+                f'Information Loss: {ncp:.3f}\n',
                 f'Running time: {time_duration:.3f} seconds']:
-        ttk.Label(text_frame,text=sen).pack(anchor=CENTER, expand=YES)
+        ttk.Label(text_frame,text=sen).pack(anchor=CENTER)
 
 
     tables_frame = ttk.Frame(results_frame)
     input_frame = ttk.Frame(tables_frame)
-    input_label = ttk.Label(input_frame, text="input data")
+    input_label = ttk.Label(input_frame, text="input data", font=title_font)
     input_df = pd.read_csv(results_path + input_data_filename)
     input_tree = build_tree(input_frame, input_df, qis)
-    input_label.pack(side=TOP,expand=YES)
-    input_tree.pack(padx=pad_x, side=BOTTOM,fill=BOTH, expand=YES)
+    input_label.pack(pady=pad_y)
+    input_tree.pack(padx=pad_x,fill=BOTH, expand=YES)
 
     output_frame = ttk.Frame(tables_frame)
-    output_label = ttk.Label(output_frame, text="output data")
+    output_label = ttk.Label(output_frame, text="output data", font=title_font)
     output_df = pd.read_csv(results_path + results_filename)
     output_tree = build_tree(output_frame, output_df, qis)
-    output_label.pack(side=TOP,expand=YES)
-    output_tree.pack(padx=pad_x, side=BOTTOM,fill=BOTH, expand=YES)
+    output_label.pack(pady=pad_y)
+    output_tree.pack(padx=pad_x,fill=BOTH, expand=YES)
 
     input_frame.pack(side=TOP, fill=BOTH, expand=YES)
     output_frame.pack(side=BOTTOM, fill=BOTH, expand=YES)
 
     buttons_frame = create_buttons_frame(results_frame, "Back to configuration", main_window)
 
-    text_frame.pack(side=TOP,fill=X, expand=YES)
+    text_frame.pack(fill=X)
     tables_frame.pack(fill=BOTH, expand=YES)
-    buttons_frame.pack(side=BOTTOM, fill=X, expand=YES)
+    buttons_frame.pack(side=BOTTOM, fill=X)
 
 
 def build_tree(frame, df, qis):
+    container = ttk.Frame(frame)
     table_cols = ['index'] + qis
-    tree = ttk.Treeview(frame, selectmode='extended', show="headings", columns=table_cols)
+    tree = ttk.Treeview(container, selectmode='extended', show="headings", columns=table_cols)
     clear_tree(tree)
     for index, qi in enumerate(table_cols):
-        tree.column( "# " + str(index), anchor=CENTER, stretch=YES)
+        tree.column( "# " + str(index), anchor=CENTER)
         tree.heading(index, text=qi)
+
+
+    scrollbar_vertical = ttk.Scrollbar(container, orient='vertical', command=tree.yview)
+    tree.configure(yscrollcommand=scrollbar_vertical.set)
+
     df_rows = df.to_numpy().tolist()
     for index, row in enumerate(df_rows):
-        tree.insert("", END, values=(index, *row))
-    return tree
+        tree.insert("", END, values=(index+1, *row))
+
+    scrollbar_vertical.pack(padx=3,side=RIGHT,anchor=CENTER, fill=Y)
+    tree.pack(fill=BOTH, expand=YES)
+    return container
 
 
 def clear_tree(my_tree):

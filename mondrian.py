@@ -21,7 +21,7 @@ def run(selected_k=10, selected_qis=None, n_rows=None):
     output_filename = 'mondrian_results.csv'
     raw_data_filename = './resources/adult.data'
     selected_data_filename = 'mondrian_input.csv'
-    data, selected_qis = get_data(selected_qis=selected_qis, n_rows=n_rows,
+    data, selected_qis, selected_rows = get_data(selected_qis=selected_qis, n_rows=n_rows,
                                   output_path=results_folder_path, raw_data_filename=raw_data_filename,
                                   selected_data_filename=selected_data_filename)
     qis_info = get_qis()
@@ -31,17 +31,26 @@ def run(selected_k=10, selected_qis=None, n_rows=None):
     time_duration = time.time() - start_time
     global results
     output = data.astype(str)
+    total_ncp = 0.0
     for partition in results:
-        reconstruct_result(partition, output)
+        partition_ncp = reconstruct_result(partition, output)
+        partition_ncp *= len(partition)
+        total_ncp += partition_ncp
+    total_ncp /= len(selected_qis)
+    total_ncp /= selected_rows
+    total_ncp *=100
     output.to_csv(results_folder_path + '/' + output_filename, sep=',', header=False, index=False)
-    print(f'finished in {time_duration} s')
-    return results_folder_path + '/', output_filename, selected_data_filename, time_duration
+    print(f'finished in {time_duration} s with ncp of {total_ncp:.3f}')
+    return results_folder_path + '/', output_filename, selected_data_filename, time_duration, total_ncp
 
 
 def reconstruct_result(partition, output, delimiter='~'):
     global qis_info
     row = {}
+    partition_ncp = 0.0
+
     for qi in qis_info["names"]:
+        partition_ncp += calc_norm(partition, qi)
         low = partition.restrictions[qi][0]
         high = partition.restrictions[qi][1]
         dt = 'U50'
@@ -64,6 +73,8 @@ def reconstruct_result(partition, output, delimiter='~'):
     for index, record in partition.data.iterrows():
         for qi in row:
             output.at[index, qi] = row[qi]
+
+    return partition_ncp
 
 
 def run_partition(partition):
