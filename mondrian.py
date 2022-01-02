@@ -11,25 +11,28 @@ qis_info = {}
 
 
 def run(selected_k=10, selected_qis=None, n_rows=None):
-    print(selected_qis)
-    print(f'starting mondrian...')
     global k
     global qis_info
+    global results
+
     k = selected_k
+    print(f'starting mondrian... \nk={k}\nselected qis:{selected_qis}')
+
 
     results_folder_path = './resources'
     output_filename = 'mondrian_results.csv'
     raw_data_filename = './resources/adult.data'
     selected_data_filename = 'mondrian_input.csv'
-    data, selected_qis, selected_rows = get_data(selected_qis=selected_qis, n_rows=n_rows,
+    data, selected_qis, selected_rows,raw_data = get_data(selected_qis=selected_qis, n_rows=n_rows,
                                   output_path=results_folder_path, raw_data_filename=raw_data_filename,
                                   selected_data_filename=selected_data_filename)
     qis_info = get_qis()
     whole = Partition(data)
     start_time = time.time()
-    run_partition(whole)
+    if k>1:
+        run_partition(whole)
+    else: data = raw_data
     time_duration = time.time() - start_time
-    global results
     output = data.astype(str)
     total_ncp = 0.0
     for partition in results:
@@ -40,7 +43,10 @@ def run(selected_k=10, selected_qis=None, n_rows=None):
     total_ncp /= selected_rows
     total_ncp *=100
     output.to_csv(results_folder_path + '/' + output_filename, sep=',', header=False, index=False)
-    print(f'finished in {time_duration} s with ncp of {total_ncp:.3f}')
+    print(f'finished in {time_duration:.3f} s with ncp of {total_ncp:.3f}%')
+
+    # reset
+    results = []
     return results_folder_path + '/', output_filename, selected_data_filename, time_duration, total_ncp
 
 

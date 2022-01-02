@@ -1,25 +1,25 @@
-Mon Dec 27 21:59:47 2021    ./profile_results
+Fri Dec 31 09:43:05 2021    ./profile_results
 
-         37329865 function calls (36915785 primitive calls) in 25.594 seconds
+         37356810 function calls (36937341 primitive calls) in 27.186 seconds
 
    Ordered by: cumulative time
    List reduced from 897 to 15 due to restriction <15>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-      2/1    0.000    0.000   25.594   25.594 {built-in method builtins.exec}
-        1    0.002    0.002   25.594   25.594 <string>:1(<module>)
-        1    0.006    0.006   25.592   25.592 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:13(run)
-   3591/1    0.093    0.000   18.925   18.925 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:68(run_partition)
-     5135    0.172    0.000    9.481    0.002 /Users/igalboxerman/PycharmProjects/mondrian/partition.py:5(__init__)
-    18980    0.040    0.000    6.868    0.000 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:139(find_mid)
-    18980    0.106    0.000    6.803    0.000 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:120(frequency_set)
-242978/160800    0.305    0.000    6.645    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
-114528/114527    0.650    0.000    6.404    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/series.py:315(__init__)
-    18988    0.025    0.000    6.378    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/base.py:874(value_counts)
-    18988    0.115    0.000    6.353    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/algorithms.py:796(value_counts)
-164340/82180    0.454    0.000    6.183    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/numpy/core/fromnumeric.py:69(_wrapreduction)
-     1796    0.344    0.000    6.057    0.003 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:40(reconstruct_result)
-    82160    0.164    0.000    5.729    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/generic.py:10324(_stat_function)
-    82161    0.393    0.000    5.204    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/series.py:4359(_reduce)
+      2/1    0.000    0.000   27.186   27.186 {built-in method builtins.exec}
+        1    0.002    0.002   27.186   27.186 <string>:1(<module>)
+        1    0.012    0.012   27.184   27.184 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:13(run)
+   3591/1    0.101    0.000   19.794   19.794 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:80(run_partition)
+     5135    0.174    0.000    9.922    0.002 /Users/igalboxerman/PycharmProjects/mondrian/partition.py:5(__init__)
+    18980    0.043    0.000    7.131    0.000 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:151(find_mid)
+    18980    0.107    0.000    7.061    0.000 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:132(frequency_set)
+242978/160800    0.324    0.000    6.932    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+114528/114527    0.704    0.000    6.792    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/series.py:315(__init__)
+     1796    0.398    0.000    6.777    0.004 /Users/igalboxerman/PycharmProjects/mondrian/mondrian.py:47(reconstruct_result)
+    18988    0.026    0.000    6.622    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/base.py:874(value_counts)
+    18988    0.121    0.000    6.595    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/algorithms.py:796(value_counts)
+164340/82180    0.478    0.000    6.428    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/numpy/core/fromnumeric.py:69(_wrapreduction)
+    82160    0.176    0.000    5.955    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/generic.py:10324(_stat_function)
+    82161    0.400    0.000    5.409    0.000 /Users/igalboxerman/PycharmProjects/mondrian/venv/lib/python3.7/site-packages/pandas/core/series.py:4359(_reduce)
 
 

@@ -55,14 +55,16 @@ def get_data(selected_qis=None, n_rows=None, output_path=None,
 
     data = filter_data(data)
 
-    if n_rows and n_rows<32560:
+    if n_rows and n_rows<len(data.index):
         data = data.sample(n=n_rows)
 
     data.to_csv(output_path, sep=',', header=False, index=False)
 
     set_dict(data, qis)
+
+    raw_data = data.copy()
     data = convert_to_number(data)
-    return data, qis[:-1], len(data.index)
+    return data, qis[:-1], len(data.index),raw_data
 
 
 def convert_to_number(data):
