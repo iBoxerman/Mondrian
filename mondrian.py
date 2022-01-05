@@ -176,7 +176,7 @@ def find_mid(partition, qi):
 
 
 if __name__ == '__main__':
-    cProfile.run('run(10, n_rows=None)', './profile_results')
+    cProfile.run('run(10, n_rows=5000)', './profile_results')
 
     file = open('formatted_profile.txt', 'w')
     profile = pstats.Stats('./profile_results', stream=file)

@@ -49,7 +49,7 @@ def main_window(init=False):
 
     k_frame = ttk.Frame(scales_frame)
     k_label = ttk.Label(k_frame, text="Choose K", font=title_font)
-    k = ttk.LabeledScale(k_frame, from_=0, to=20)
+    k = ttk.LabeledScale(k_frame, from_=0, to=1000)
     k.value = 10
     k_label.pack(side=TOP, expand=YES)
     k.pack(side=BOTTOM, fill=X, expand=YES)

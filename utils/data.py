@@ -12,6 +12,7 @@ default_attributes = ['age', 'work_class',
                       'education_num', 'marital_status', 'occupation',
                       'race', 'sex', 'native_country', 'income']
 
+
 qis = default_attributes
 
 qis_info = {}
