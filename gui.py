@@ -50,7 +50,7 @@ def main_window(init=False):
     k_frame = ttk.Frame(scales_frame)
     k_label = ttk.Label(k_frame, text="Choose K", font=title_font)
     k = ttk.LabeledScale(k_frame, from_=0, to=1000)
-    k.value = 10
+    k.value = 100
     k_label.pack(side=TOP, expand=YES)
     k.pack(side=BOTTOM, fill=X, expand=YES)
 
@@ -58,7 +58,7 @@ def main_window(init=False):
     n_label = ttk.Label(n_frame, text="Choose Number of Records", font=title_font)
     n = ttk.LabeledScale(n_frame, from_=1, to=32561)
     # n.value = 32561//2
-    n.value = 200
+    n.value = 30000
     n_label.pack(side=TOP, expand=YES)
     n.pack(side=BOTTOM, fill=X, expand=YES)
 
@@ -89,7 +89,7 @@ def main_window(init=False):
 
         results_path, results_filename, input_data_filename, time_duration, ncp = run(k.value, qis,
                                                                                       n_rows=n.value + 1)
-        results(results_path, results_filename, input_data_filename, qis, time_duration, ncp)
+        results(results_path, results_filename, input_data_filename, qis, time_duration, ncp, k.value, n.value)
         switch_to_results()
 
     buttons_frame = create_buttons_frame(config_model, "Run", action)
@@ -114,10 +114,11 @@ def switch_to_main():
     config_model.pack(fill=BOTH, expand=YES)
 
 
-def results(results_path, results_filename, input_data_filename, qis, time_duration, ncp):
+def results(results_path, results_filename, input_data_filename, qis, time_duration, ncp,k,n):
     switch_to_results()
     text_frame = ttk.Frame(results_frame)
-    for sen in [f'Results description\n',
+    for sen in [f'Results for k={k}, n={n}',
+                f'QIS={qis}\n',
                 f'Information Loss: {ncp:.3f}%\n',
                 f'Running time: {time_duration:.3f} seconds']:
         ttk.Label(text_frame, text=sen).pack(anchor=CENTER)

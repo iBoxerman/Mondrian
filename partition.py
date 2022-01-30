@@ -6,7 +6,6 @@ class Partition(object):
         self.data = data
         self.finished_qis = {}
         self.restrictions = {}
-        self.freq_set = {}
 
         qis = data.columns.tolist()
         qis.remove('income')
